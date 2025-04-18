@@ -15,7 +15,7 @@ export interface DecodeOptions {
 /**
  * Attempts to turn the given INI string into a nested data object.
  *
- * @param text - init string
+ * @param text - ini string
  * @param options - decode options {@link DecodeOptions}
  * @returns nested data object
  */

@@ -29,6 +29,7 @@
     "esbuild",
     "lcov",
     "pnpm",
+    "sunos",
     "unesc",
     "unstub",
     "vite",
