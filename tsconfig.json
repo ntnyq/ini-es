@@ -7,6 +7,8 @@
     "moduleResolution": "Bundler",
     "types": ["node", "vite/client"],
     "resolveJsonModule": true,
+    "erasableSyntaxOnly": true,
+    "libReplacement": false,
     "declaration": true,
     "isolatedDeclarations": true,
     "isolatedModules": true,
