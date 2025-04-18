@@ -1,9 +1,6 @@
 packages:
   - .
-  - docs
-  - packages/*
-  - playground
 overrides:
-  esbuild: ^0.25.0
+  esbuild: ^0.25.2
 onlyBuiltDependencies:
   - esbuild
