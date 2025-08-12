@@ -102,7 +102,7 @@ export function encode(
     align = false,
     bracketedArray = true,
     newline = false,
-    platform = typeof process !== 'undefined' ? process.platform : undefined,
+    platform = typeof process == 'undefined' ? undefined : process.platform,
     section,
     sort = false,
     whitespace = options.align || false,
