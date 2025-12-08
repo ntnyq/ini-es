@@ -2,7 +2,7 @@
   "name": "ini-es",
   "type": "module",
   "version": "0.1.0",
-  "packageManager": "pnpm@10.23.0",
+  "packageManager": "pnpm@10.24.0",
   "description": "ESM and TypeScript rewrite of [npm/ini](https://github.com/npm/ini)",
   "keywords": [
     "decode",
@@ -54,16 +54,16 @@
     "@ntnyq/eslint-config": "^5.8.0",
     "@ntnyq/prettier-config": "^3.0.1",
     "@types/node": "^24.10.1",
-    "bumpp": "^10.3.1",
+    "bumpp": "^10.3.2",
     "eslint": "^9.39.1",
     "husky": "^9.1.7",
     "nano-staged": "^0.9.0",
     "npm-run-all2": "^8.0.4",
-    "prettier": "^3.6.2",
-    "tsdown": "^0.16.6",
+    "prettier": "^3.7.3",
+    "tsdown": "^0.16.8",
     "typescript": "^5.9.3",
-    "vite": "^7.2.4",
-    "vitest": "^4.0.13"
+    "vite": "^7.2.6",
+    "vitest": "^4.0.14"
   },
   "nano-staged": {
     "*.{js,ts,mjs,cjs,md,vue,yml,yaml,toml,json}": "eslint --fix"
