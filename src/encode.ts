@@ -102,6 +102,7 @@ export function encode(
     align = false,
     bracketedArray = true,
     newline = false,
+    // @ts-expect-error process may be undefined in some environments
     platform = typeof process == 'undefined' ? undefined : process.platform,
     section,
     sort = false,
