@@ -2,7 +2,7 @@
   "name": "ini-es",
   "type": "module",
   "version": "0.2.0",
-  "packageManager": "pnpm@10.26.1",
+  "packageManager": "pnpm@10.26.2",
   "description": "ESM and TypeScript rewrite of [npm/ini](https://github.com/npm/ini)",
   "keywords": [
     "decode",
@@ -58,7 +58,7 @@
     "nano-staged": "^0.9.0",
     "npm-run-all2": "^8.0.4",
     "prettier": "^3.7.4",
-    "tsdown": "^0.18.2",
+    "tsdown": "^0.18.3",
     "typescript": "^5.9.3",
     "vitest": "^4.0.16"
   },
