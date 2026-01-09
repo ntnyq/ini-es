@@ -33,7 +33,7 @@ bun add ini-es
 ## Usage
 
 ```ts
-import { encode, decode } from 'init-es'
+import { encode, decode } from 'ini-es'
 
 const INI_SAMPLE = `
 ; This comment is being ignored
@@ -61,6 +61,17 @@ const encoded = encode(decoded)
 console.log(encoded)
 // => ini string
 ```
+
+### Node FS helpers
+
+```ts
+import { readIniFile, readIniFileSync } from 'ini-es/fs'
+
+const config = await readIniFile('./config.ini')
+const configSync = readIniFileSync('./config.ini')
+```
+
+These helpers strip a UTF-8 BOM if present before decoding the content.
 
 ## API
 

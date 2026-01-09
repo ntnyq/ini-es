@@ -36,3 +36,16 @@ export function splitSections(text: string, separator: string): string[] {
 
   return sections
 }
+
+/**
+ * Strips BOM character from string
+ * @param text - input string
+ * @returns - string without BOM character
+ */
+export function stripBOM(text: string): string {
+  // eslint-disable-next-line unicorn/number-literal-case
+  if (text.codePointAt(0) === 0xfeff) {
+    return text.slice(1)
+  }
+  return text
+}
