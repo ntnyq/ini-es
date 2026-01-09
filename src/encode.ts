@@ -102,7 +102,6 @@ export function encode(
     align = false,
     bracketedArray = true,
     newline = false,
-    // @ts-expect-error process may be undefined in some environments
     platform = typeof process == 'undefined' ? undefined : process.platform,
     section,
     sort = false,
@@ -114,6 +113,7 @@ export function encode(
   const children: string[] = []
 
   const keys = sort ? Object.keys(obj).sort() : Object.keys(obj)
+  const arraySuffix = bracketedArray ? '[]' : ''
 
   let padToChars = 0
   // If aligning on the separator, then padToChars is determined as follows:
@@ -132,14 +132,13 @@ export function encode(
             || Array.isArray(obj[k])
             || typeof obj[k] !== 'object',
         )
-        .map(k => (Array.isArray(obj[k]) ? `${k}[]` : k))
+        .map(k => (Array.isArray(obj[k]) ? `${k}${arraySuffix}` : k))
         .concat([''])
         .reduce((a, b) => (safe(a).length >= safe(b).length ? a : b)),
     ).length
   }
 
   let out = ''
-  const arraySuffix = bracketedArray ? '[]' : ''
 
   for (const k of keys) {
     const val = obj[k]

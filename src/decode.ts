@@ -31,7 +31,7 @@ export function decode<T extends AnyObject = AnyObject>(
   //          section          |key      = value
   const re = /^\[([^\]]*)\]\s*$|^([^=]+)(=(.*))?$/
   const lines = text.split(/[\r\n]+/g)
-  const duplicates: Record<string, any> = {}
+  let duplicates: Record<string, any> = Object.create(null)
 
   for (const line of lines) {
     if (!line || /^\s*[;#]/.test(line) || /^\s*$/.test(line)) {
@@ -49,6 +49,7 @@ export function decode<T extends AnyObject = AnyObject>(
         p = Object.create(null)
         continue
       }
+      duplicates = Object.create(null)
       p = out[section] = out[section] || Object.create(null)
       continue
     }
