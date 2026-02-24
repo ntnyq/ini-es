@@ -6,8 +6,8 @@ export function hasOwn(obj: AnyObject, key: PropertyKey): boolean {
 
 export function isQuoted(value: string): boolean {
   return (
-    (value.startsWith(`"`) && value.endsWith(`"`))
-    || (value.startsWith(`'`) && value.endsWith(`'`))
+    (value.startsWith(`"`) && value.endsWith(`"`)) ||
+    (value.startsWith(`'`) && value.endsWith(`'`))
   )
 }
 

@@ -1,6 +1,6 @@
+import type { AnyObject } from './types'
 import { unsafe } from './unsafe'
 import { hasOwn, splitSections } from './utils'
-import type { AnyObject } from './types'
 
 export interface DecodeOptions {
   /**
@@ -96,9 +96,9 @@ export function decode<T extends AnyObject = AnyObject>(
 
   for (const k of Object.keys(out)) {
     if (
-      !hasOwn(out, k)
-      || typeof out[k] !== 'object'
-      || Array.isArray(out[k])
+      !hasOwn(out, k) ||
+      typeof out[k] !== 'object' ||
+      Array.isArray(out[k])
     ) {
       continue
     }

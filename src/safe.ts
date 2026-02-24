@@ -8,11 +8,11 @@ import { isQuoted } from './utils'
  */
 export function safe(text: string): string {
   if (
-    typeof text !== 'string'
-    || /[=\r\n]/.test(text)
-    || /^\[/.test(text)
-    || (text.length > 1 && isQuoted(text))
-    || text !== text.trim()
+    typeof text !== 'string' ||
+    /[=\r\n]/.test(text) ||
+    text.startsWith('[') ||
+    (text.length > 1 && isQuoted(text)) ||
+    text !== text.trim()
   ) {
     return JSON.stringify(text)
   }

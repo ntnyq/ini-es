@@ -1,6 +1,6 @@
 import { safe } from './safe'
-import { splitSections } from './utils'
 import type { AnyObject } from './types'
+import { splitSections } from './utils'
 
 export interface EncodeOptions {
   /**
@@ -128,9 +128,9 @@ export function encode(
       keys
         .filter(
           k =>
-            obj[k] === null
-            || Array.isArray(obj[k])
-            || typeof obj[k] !== 'object',
+            obj[k] === null ||
+            Array.isArray(obj[k]) ||
+            typeof obj[k] !== 'object',
         )
         .map(k => (Array.isArray(obj[k]) ? `${k}${arraySuffix}` : k))
         .concat([''])
@@ -145,10 +145,10 @@ export function encode(
     if (val && Array.isArray(val)) {
       for (const item of val) {
         out +=
-          safe(`${k}${arraySuffix}`).padEnd(padToChars, ' ')
-          + separator
-          + safe(item)
-          + eol
+          safe(`${k}${arraySuffix}`).padEnd(padToChars, ' ') +
+          separator +
+          safe(item) +
+          eol
       }
     } else if (val && typeof val === 'object') {
       children.push(k)
