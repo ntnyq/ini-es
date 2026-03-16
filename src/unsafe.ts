@@ -9,23 +9,23 @@ import { isQuoted } from './utils'
 export function unsafe(text: string): string {
   text = (text || '').trim()
   if (isQuoted(text)) {
-    // remove the single quotes before calling JSON.parse
+    // Remove the single quotes before calling JSON.parse
     if (text.charAt(0) === "'") {
       text = text.slice(1, -1)
     }
     try {
       text = JSON.parse(text)
     } catch {
-      // ignore errors
+      // Ignore errors
     }
   } else {
-    // walk the text to find the first not-escaped ; character
+    // Walk the text to find the first not-escaped ; character
     let esc = false
     let unesc = ''
     for (let i = 0, l = text.length; i < l; i++) {
       const c = text.charAt(i)
       if (esc) {
-        if ('\\;#'.includes(c)) {
+        if (String.raw`\;#`.includes(c)) {
           unesc += c
         } else {
           unesc += `\\${c}`

@@ -9,7 +9,7 @@ import { stripBOM } from './utils'
  * @returns parsed INI data object
  */
 export async function readIniFile(filePath: string) {
-  const data = await readFile(filePath, 'utf-8')
+  const data = await readFile(filePath, 'utf8')
   return parse(data)
 }
 
@@ -19,7 +19,7 @@ export async function readIniFile(filePath: string) {
  * @returns parsed INI data Object
  */
 export function readIniFileSync(filePath: string) {
-  const data = readFileSync(filePath, 'utf-8')
+  const data = readFileSync(filePath, 'utf8')
   return parse(data)
 }
 

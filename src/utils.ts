@@ -1,7 +1,7 @@
 import type { AnyObject } from './types'
 
 export function hasOwn(obj: AnyObject, key: PropertyKey): boolean {
-  return Object.prototype.hasOwnProperty.call(obj, key)
+  return Object.hasOwn(obj, key)
 }
 
 export function isQuoted(value: string): boolean {
@@ -44,7 +44,7 @@ export function splitSections(text: string, separator: string): string[] {
  */
 export function stripBOM(text: string): string {
   // eslint-disable-next-line unicorn/number-literal-case
-  if (text.codePointAt(0) === 0xfeff) {
+  if (text.codePointAt(0) === 0xfe_ff) {
     return text.slice(1)
   }
   return text

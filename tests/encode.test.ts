@@ -149,7 +149,7 @@ it('encode with platform-win32', () => {
 
 describe('browser', () => {
   beforeEach(() => {
-    vi.stubEnv('platform', undefined)
+    vi.stubEnv('platform')
   })
 
   afterEach(() => {
