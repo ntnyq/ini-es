@@ -108,7 +108,7 @@ export function decode<T extends AnyObject = AnyObject>(
     const parts = splitSections(k, '.')
     p = out
     const l = parts.pop() || ''
-    const nl = l.replaceAll('\\.', '.')
+    const nl = l.replaceAll(String.raw`\.`, '.')
     for (const part of parts) {
       if (part === '__proto__') {
         continue
