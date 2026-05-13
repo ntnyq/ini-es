@@ -28,13 +28,13 @@ export function decode<T extends AnyObject = AnyObject>(
   let p: AnyObject = out
   let section = null
 
-  //          section          |key      = value
-  const re = /^\[([^\]]*)\]\s*$|^([^=]+)(=(.*))?$/
-  const lines = text.split(/[\r\n]+/g)
+  //          Section          |key      = value
+  const re = /^\[([^\]]*)\]\s*$|^([^=]+)(=(.*))?$/u
+  const lines = text.split(/[\r\n]+/gu)
   let duplicates: Record<string, any> = Object.create(null)
 
   for (const line of lines) {
-    if (!line || /^\s*[;#]/.test(line) || /^\s*$/.test(line)) {
+    if (!line || /^\s*[;#]/.test(line) || /^\s*$/u.test(line)) {
       continue
     }
     const match = line.match(re)
@@ -44,8 +44,8 @@ export function decode<T extends AnyObject = AnyObject>(
     if (match[1] !== undefined) {
       section = unsafe(match[1])
       if (section === '__proto__') {
-        // not allowed
-        // keep parsing the section, but don't attach it.
+        // Not allowed
+        // Keep parsing the section, but don't attach it.
         p = Object.create(null)
         continue
       }
@@ -81,8 +81,8 @@ export function decode<T extends AnyObject = AnyObject>(
       }
     }
 
-    // safeguard against resetting a previously defined
-    // array by accidentally forgetting the brackets
+    // Safeguard against resetting a previously defined
+    // Array by accidentally forgetting the brackets
     if (Array.isArray(p[key])) {
       p[key].push(value)
     } else {
@@ -91,7 +91,7 @@ export function decode<T extends AnyObject = AnyObject>(
   }
 
   // {a:{y:1},"a.b":{x:2}} --> {a:{y:1,b:{x:2}}}
-  // use a filter to return the keys that have to be deleted.
+  // Use a filter to return the keys that have to be deleted.
   const remove: string[] = []
 
   for (const k of Object.keys(out)) {
@@ -103,12 +103,12 @@ export function decode<T extends AnyObject = AnyObject>(
       continue
     }
 
-    // see if the parent section is also an object.
-    // if so, add it to that, and mark this one for deletion
+    // See if the parent section is also an object.
+    // If so, add it to that, and mark this one for deletion
     const parts = splitSections(k, '.')
     p = out
     const l = parts.pop() || ''
-    const nl = l.replace(/\\\./g, '.')
+    const nl = l.replaceAll('\\.', '.')
     for (const part of parts) {
       if (part === '__proto__') {
         continue
@@ -134,7 +134,7 @@ export function decode<T extends AnyObject = AnyObject>(
 }
 
 /**
- * alias of `decode`
+ * Alias of `decode`
  *
  * @see {@link decode}
  */

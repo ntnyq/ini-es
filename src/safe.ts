@@ -16,5 +16,9 @@ export function safe(text: string): string {
   ) {
     return JSON.stringify(text)
   }
-  return text.split(';').join('\\;').split('#').join('\\#')
+  return text
+    .split(';')
+    .join(String.raw`\;`)
+    .split('#')
+    .join(String.raw`\#`)
 }

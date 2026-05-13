@@ -102,7 +102,7 @@ export function encode(
     align = false,
     bracketedArray = true,
     newline = false,
-    platform = typeof process == 'undefined' ? undefined : process.platform,
+    platform = typeof process === 'undefined' ? undefined : process.platform,
     section,
     sort = false,
     whitespace = options.align || false,
@@ -112,7 +112,7 @@ export function encode(
   const separator = whitespace ? ' = ' : '='
   const children: string[] = []
 
-  const keys = sort ? Object.keys(obj).sort() : Object.keys(obj)
+  const keys = sort ? Object.keys(obj).toSorted() : Object.keys(obj)
   const arraySuffix = bracketedArray ? '[]' : ''
 
   let padToChars = 0
@@ -157,12 +157,12 @@ export function encode(
     }
   }
 
-  if (section && out.length) {
+  if (section && out.length > 0) {
     out = `[${safe(section)}]${newline ? eol + eol : eol}${out}`
   }
 
   for (const k of children) {
-    const nk = splitSections(k, '.').join('\\.')
+    const nk = splitSections(k, '.').join(String.raw`\.`)
     const newSection = (section ? `${section}.` : '') + nk
     const child = encode(obj[k], {
       align,
@@ -173,7 +173,7 @@ export function encode(
       sort,
       whitespace,
     })
-    if (out.length && child.length) {
+    if (out.length > 0 && child.length > 0) {
       out += eol
     }
 
@@ -184,7 +184,7 @@ export function encode(
 }
 
 /**
- * alias of `encode`
+ * Alias of `encode`
  *
  * @see {@link encode}
  */
