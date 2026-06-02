@@ -1,6 +1,6 @@
 {
   "name": "ini-es",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "ESM and TypeScript rewrite of [npm/ini](https://github.com/npm/ini)",
   "keywords": [
     "decode",
