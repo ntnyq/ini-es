@@ -1,20 +1,21 @@
+import { COMMENT_PREFIXES } from './constants'
 import { isQuoted } from './utils'
 
 /**
- * Revert `safe` processed result
+ * Reverts a token previously processed by {@link safe}.
  *
  * @param text - given ini key or value
- * @returns reversed safe process result
+ * @returns unescaped and normalized text value
  */
 export function unsafe(text: string): string {
-  text = (text || '').trim()
-  if (isQuoted(text)) {
+  let value = (text || '').trim()
+  if (isQuoted(value)) {
     // Remove the single quotes before calling JSON.parse
-    if (text.charAt(0) === "'") {
-      text = text.slice(1, -1)
+    if (value.charAt(0) === "'") {
+      value = value.slice(1, -1)
     }
     try {
-      text = JSON.parse(text)
+      value = JSON.parse(value)
     } catch {
       // Ignore errors
     }
@@ -22,17 +23,17 @@ export function unsafe(text: string): string {
     // Walk the text to find the first not-escaped ; character
     let esc = false
     let unesc = ''
-    for (let i = 0, l = text.length; i < l; i++) {
-      const c = text.charAt(i)
+    for (let i = 0, l = value.length; i < l; i++) {
+      const c = value.charAt(i)
       if (esc) {
-        if (String.raw`\;#`.includes(c)) {
+        if (COMMENT_PREFIXES.includes(c)) {
           unesc += c
         } else {
           unesc += `\\${c}`
         }
 
         esc = false
-      } else if (';#'.includes(c)) {
+      } else if (COMMENT_PREFIXES.includes(c)) {
         break
       } else if (c === '\\') {
         esc = true
@@ -46,5 +47,5 @@ export function unsafe(text: string): string {
 
     return unesc.trim()
   }
-  return text
+  return value
 }

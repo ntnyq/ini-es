@@ -1,24 +1,27 @@
+import { COMMENT_PREFIXES } from './constants'
 import { isQuoted } from './utils'
 
 /**
- * Turn the given string into a safe to use key or value in your INI file
+ * Converts text into an INI-safe key/value representation.
  *
  * @param text - given string
- * @returns init key or value
+ * @returns escaped or JSON-quoted INI token
  */
 export function safe(text: string): string {
   if (
     typeof text !== 'string' ||
-    /[=\r\n]/.test(text) ||
+    /[=\r\n]/u.test(text) ||
     text.startsWith('[') ||
     (text.length > 1 && isQuoted(text)) ||
     text !== text.trim()
   ) {
     return JSON.stringify(text)
   }
-  return text
-    .split(';')
-    .join(String.raw`\;`)
-    .split('#')
-    .join(String.raw`\#`)
+
+  let output = text
+  for (const prefix of COMMENT_PREFIXES) {
+    output = output.split(prefix).join(`\\${prefix}`)
+  }
+
+  return output
 }

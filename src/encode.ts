@@ -1,5 +1,11 @@
+import { ARRAY_SUFFIX, EOL_CRLF, EOL_LF, SECTION_SEPARATOR } from './constants'
 import { safe } from './safe'
-import type { AnyObject } from './types'
+import type {
+  AnyObject,
+  EncodeLayoutContext,
+  NormalizedEncodeOptions,
+  Platform,
+} from './types'
 import { splitSections } from './utils'
 
 export interface EncodeOptions {
@@ -66,21 +72,182 @@ export interface EncodeOptions {
 }
 
 /**
- * Type of `process.platform`
+ * Applies defaults and shorthand normalization for encode options.
+ *
+ * @param options - user-provided encode options or section shorthand
+ * @returns normalized options consumed by the encoder internals
  */
-type Platform =
-  | 'aix'
-  | 'android'
-  | 'cygwin'
-  | 'darwin'
-  | 'freebsd'
-  | 'haiku'
-  | 'linux'
-  | 'netbsd'
-  | 'openbsd'
-  | 'sunos'
-  | 'win32'
+function normalizeOptions(
+  options: string | EncodeOptions,
+): NormalizedEncodeOptions {
+  const parsedOptions =
+    typeof options === 'string'
+      ? {
+          section: options,
+        }
+      : options
 
+  return {
+    align: parsedOptions.align ?? false,
+    bracketedArray: parsedOptions.bracketedArray ?? true,
+    newline: parsedOptions.newline ?? false,
+    platform:
+      parsedOptions.platform ??
+      (typeof process === 'undefined'
+        ? undefined
+        : (process.platform as Platform)),
+    section: parsedOptions.section,
+    sort: parsedOptions.sort ?? false,
+    whitespace: parsedOptions.whitespace ?? parsedOptions.align ?? false,
+  }
+}
+
+/**
+ * Calculates key padding width required for aligned separators.
+ *
+ * @param obj - source object being encoded
+ * @param keys - selected key list for current section
+ * @param options - alignment-related options subset
+ * @returns max rendered key width or 0 when alignment is disabled
+ */
+function getPadToChars(
+  obj: AnyObject,
+  keys: string[],
+  options: Pick<NormalizedEncodeOptions, 'align'> &
+    Pick<EncodeLayoutContext, 'arraySuffix'>,
+): number {
+  if (!options.align) {
+    return 0
+  }
+
+  return safe(
+    keys
+      .filter(
+        k =>
+          obj[k] === null ||
+          Array.isArray(obj[k]) ||
+          typeof obj[k] !== 'object',
+      )
+      .map(k => (Array.isArray(obj[k]) ? `${k}${options.arraySuffix}` : k))
+      .concat([''])
+      .reduce((a, b) => (safe(a).length >= safe(b).length ? a : b)),
+  ).length
+}
+
+/**
+ * Encodes primitive and array entries for one section and collects nested children.
+ *
+ * @param obj - current section object
+ * @param keys - key list to encode
+ * @param context - rendering layout context
+ * @returns encoded section output and child object keys
+ */
+function encodeEntries(
+  obj: AnyObject,
+  keys: string[],
+  context: EncodeLayoutContext,
+): { out: string; children: string[] } {
+  let out = ''
+  const children: string[] = []
+
+  for (const k of keys) {
+    const val = obj[k]
+    if (val && Array.isArray(val)) {
+      for (const item of val) {
+        out +=
+          safe(`${k}${context.arraySuffix}`).padEnd(context.padToChars, ' ') +
+          context.separator +
+          safe(item) +
+          context.eol
+      }
+      continue
+    }
+
+    if (val && typeof val === 'object') {
+      children.push(k)
+      continue
+    }
+
+    out +=
+      safe(k).padEnd(context.padToChars, ' ') +
+      context.separator +
+      safe(val) +
+      context.eol
+  }
+
+  return {
+    out,
+    children,
+  }
+}
+
+/**
+ * Parameters used while encoding nested child sections.
+ */
+interface EncodeChildSectionsParams {
+  /** Current object whose child objects will be recursively encoded. */
+  obj: AnyObject
+  /** Child keys collected from current section. */
+  children: string[]
+  /** Normalized parent options to carry into recursion. */
+  options: NormalizedEncodeOptions
+  /** End-of-line marker for current platform. */
+  eol: string
+  /** Current accumulated output. */
+  out: string
+}
+
+/**
+ * Encodes nested object sections and appends them to the current output.
+ *
+ * @param params - recursion context
+ * @param encodeChild - callback used to encode each child object
+ * @returns full output including child sections
+ */
+function encodeChildSections(
+  params: EncodeChildSectionsParams,
+  encodeChild: (value: AnyObject, section: string) => string,
+): string {
+  let result = params.out
+
+  for (const k of params.children) {
+    const nk = splitSections(k, SECTION_SEPARATOR).join(String.raw`\.`)
+    const newSection =
+      (params.options.section
+        ? `${params.options.section}${SECTION_SEPARATOR}`
+        : '') + nk
+    const child = encodeChild(params.obj[k], newSection)
+    if (result.length > 0 && child.length > 0) {
+      result += params.eol
+    }
+
+    result += child
+  }
+
+  return result
+}
+
+/**
+ * Builds recursive options for one child section branch.
+ *
+ * @param options - normalized parent options
+ * @param section - child section path
+ * @returns EncodeOptions object for recursive call
+ */
+function buildChildOptions(
+  options: NormalizedEncodeOptions,
+  section: string,
+): EncodeOptions {
+  return {
+    align: options.align,
+    bracketedArray: options.bracketedArray,
+    newline: options.newline,
+    platform: options.platform,
+    section,
+    sort: options.sort,
+    whitespace: options.whitespace,
+  }
+}
 /**
  * Encodes the given data object as an INI formatted string
  *
@@ -92,95 +259,40 @@ export function encode(
   obj: AnyObject,
   options: string | EncodeOptions = {},
 ): string {
-  if (typeof options === 'string') {
-    options = {
-      section: options,
-    }
+  const normalized = normalizeOptions(options)
+
+  const eol = normalized.platform === 'win32' ? EOL_CRLF : EOL_LF
+  const separator = normalized.whitespace ? ' = ' : '='
+
+  const keys = normalized.sort ? Object.keys(obj).toSorted() : Object.keys(obj)
+  const arraySuffix = normalized.bracketedArray ? ARRAY_SUFFIX : ''
+  const padToChars = getPadToChars(obj, keys, {
+    align: normalized.align,
+    arraySuffix,
+  })
+  const { out: sectionOut, children } = encodeEntries(obj, keys, {
+    arraySuffix,
+    separator,
+    eol,
+    padToChars,
+  })
+
+  let out = sectionOut
+
+  if (normalized.section && out.length > 0) {
+    out = `[${safe(normalized.section)}]${normalized.newline ? eol + eol : eol}${out}`
   }
 
-  const {
-    align = false,
-    bracketedArray = true,
-    newline = false,
-    platform = typeof process === 'undefined' ? undefined : process.platform,
-    section,
-    sort = false,
-    whitespace = options.align || false,
-  } = options
-
-  const eol = platform === 'win32' ? '\r\n' : '\n'
-  const separator = whitespace ? ' = ' : '='
-  const children: string[] = []
-
-  const keys = sort ? Object.keys(obj).toSorted() : Object.keys(obj)
-  const arraySuffix = bracketedArray ? '[]' : ''
-
-  let padToChars = 0
-  // If aligning on the separator, then padToChars is determined as follows:
-  // 1. Get the keys
-  // 2. Exclude keys pointing to objects unless the value is null or an array
-  // 3. Add `[]` to array keys
-  // 4. Ensure non empty set of keys
-  // 5. Reduce the set to the longest `safe` key
-  // 6. Get the `safe` length
-  if (align) {
-    padToChars = safe(
-      keys
-        .filter(
-          k =>
-            obj[k] === null ||
-            Array.isArray(obj[k]) ||
-            typeof obj[k] !== 'object',
-        )
-        .map(k => (Array.isArray(obj[k]) ? `${k}${arraySuffix}` : k))
-        .concat([''])
-        .reduce((a, b) => (safe(a).length >= safe(b).length ? a : b)),
-    ).length
-  }
-
-  let out = ''
-
-  for (const k of keys) {
-    const val = obj[k]
-    if (val && Array.isArray(val)) {
-      for (const item of val) {
-        out +=
-          safe(`${k}${arraySuffix}`).padEnd(padToChars, ' ') +
-          separator +
-          safe(item) +
-          eol
-      }
-    } else if (val && typeof val === 'object') {
-      children.push(k)
-    } else {
-      out += safe(k).padEnd(padToChars, ' ') + separator + safe(val) + eol
-    }
-  }
-
-  if (section && out.length > 0) {
-    out = `[${safe(section)}]${newline ? eol + eol : eol}${out}`
-  }
-
-  for (const k of children) {
-    const nk = splitSections(k, '.').join(String.raw`\.`)
-    const newSection = (section ? `${section}.` : '') + nk
-    const child = encode(obj[k], {
-      align,
-      bracketedArray,
-      newline,
-      platform,
-      section: newSection,
-      sort,
-      whitespace,
-    })
-    if (out.length > 0 && child.length > 0) {
-      out += eol
-    }
-
-    out += child
-  }
-
-  return out
+  return encodeChildSections(
+    {
+      obj,
+      children,
+      options: normalized,
+      eol,
+      out,
+    },
+    (value, section) => encode(value, buildChildOptions(normalized, section)),
+  )
 }
 
 /**

@@ -26,7 +26,9 @@
     "sort-imports": "off",
     "no-continue": "off",
     "no-undefined": "off",
+    "no-plusplus": "off",
     "no-magic-numbers": "off",
+    "id-length": "off",
     "import/group-exports": "off",
     "import/no-default-export": "off",
     "import/exports-last": "off",
@@ -40,6 +42,13 @@
     "unicorn/no-null": "off",
     "unicorn/prefer-string-raw": "off",
     "unicorn/no-useless-undefined": "off",
+    "func-style": ["warn", "declaration", { "allowArrowFunctions": true }],
+    "max-statements": ["warn", 100],
+    "complexity": ["warn", 50],
+    "max-lines": [
+      "warn",
+      { "max": 1000, "skipBlankLines": true, "skipComments": true },
+    ],
   },
   "overrides": [
     {
